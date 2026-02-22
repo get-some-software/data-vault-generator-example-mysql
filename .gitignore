@@ -1,1 +1,8 @@
 setEnv.sh
+.venv/**
+**.cpython-3*/*
+__pycache__/**
+*.pyc
+*.pyo
+*.pyd
+*.db
