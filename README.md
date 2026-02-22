@@ -21,7 +21,7 @@
 
    ```bash
    sudo dnf install mysql-devel python3-devel
-   pip3 install mysql-connector-python
+   sudo pip3 install mysql-connector-python
    ```
 
 ## Usage
