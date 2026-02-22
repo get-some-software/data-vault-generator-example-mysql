@@ -28,140 +28,81 @@ class EodToday(object):
 
             with connection.cursor() as cursor:
 
-                sql=("""MERGE INTO src_file_log sfl
-                            USING (
-                            WITH days AS (
-                                SELECT
-                                    trunc(sysdate)         AS extraction_date
-                                FROM
-                                    dual
-                            ), sfl_m AS (
-                            SELECT
-                                - 1                 AS seq_no,
-                                sysdate             AS load_date,
-                                'EodToday.py'     AS record_source,
-                                'EOD'               AS system_id,
-                                'DP001'             AS data_package_id,
-                                NULL                AS file_id,
-                                NULL                AS file_name,
-                                NULL                AS file_path,
-                                NULL                AS file_size,
-                                NULL                AS file_hk,
-                                NULL                AS file_hk_prev,
-                                'N'                AS file_modified_flag,
-                                extraction_date     AS file_creation_date,
-                                extraction_date     AS file_modification_date,
-                                to_char(
-                                    extraction_date, 'YYYYMMDD-HH24:MI:SS'
-                                ) || '"""+ eodExchange+"""' AS file_extraction_id,
-                                extraction_date     AS file_extraction_date,
-                                NULL                AS file_copied_flag,
-                                NULL                AS file_copy_date,
-                                NULL                AS file_read_flag,
-                                sysdate             AS file_read_date,
-                                'N'                 AS file_processed_flag,
-                                NULL                AS file_processed_date,
-                                NULL                AS bv_processed_flag,
-                                NULL                AS bv_refresh_start_date,
-                                NULL                AS bv_refresh_end_date
-                            FROM
-                                days
-                            WHERE
-                                    to_char(
-                                    extraction_date, 'd'
-                                ) NOT IN ( '1',
-                                '7')
-                                AND trunc(extraction_date) NOT IN (
-                                    SELECT
-                                        trunc(se_bank_holiday)
-                                    FROM
-                                        exn1.se_bank_holiday
-                                )
-                            ORDER BY
-                                extraction_date ASC
-                        )
-                        SELECT
-                            *
-                        FROM
-                            sfl_m
-                        WHERE 1=1
-                        ) sfl_n ON ( sfl.file_extraction_date = sfl_n.file_extraction_date
-                                    AND sfl.file_extraction_id = sfl_n.file_extraction_id
-                                    AND sfl.data_package_id = sfl_n.data_package_id )
-                        WHEN MATCHED THEN UPDATE SET          
-                                    sfl.load_date = sysdate,
-                                    sfl.file_read_date = sysdate,
-                                    sfl.file_modification_date = sysdate,
-                                    sfl.file_modified_flag = 'Y',
-                                    sfl.file_processed_flag = 'N' 
-                        WHEN NOT MATCHED THEN
-                        INSERT (
-                        seq_no,
-                        load_date,
-                        record_source,
-                        system_id,
-                        data_package_id,
-                        file_id,
-                        file_name,
-                        file_path,
-                        file_size,
-                        file_hk,
-                        file_hk_prev,
-                        file_modified_flag,
-                        file_creation_date,
-                        file_modification_date,
-                        file_extraction_id,
-                        file_extraction_date,
-                        file_copied_flag,
-                        file_copy_date,
-                        file_read_flag,
-                        file_read_date,
-                        file_processed_flag,
-                        file_processed_date,
-                        bv_processed_flag,
-                        bv_refresh_start_date,
-                        bv_refresh_end_date )
-                        VALUES
-                        ( src_file_log_seq.NEXTVAL,
-                        sfl_n.load_date,
-                        sfl_n.record_source,
-                        sfl_n.system_id,
-                        sfl_n.data_package_id,
-                        sfl_n.file_id,
-                        sfl_n.file_name,
-                        sfl_n.file_path,
-                        sfl_n.file_size,
-                        sfl_n.file_hk,
-                        sfl_n.file_hk_prev,
-                        sfl_n.file_modified_flag,
-                        sfl_n.file_creation_date,
-                        sfl_n.file_modification_date,
-                        sfl_n.file_extraction_id,
-                        sfl_n.file_extraction_date,
-                        sfl_n.file_copied_flag,
-                        sfl_n.file_copy_date,
-                        sfl_n.file_read_flag,
-                        sfl_n.file_read_date,
-                        sfl_n.file_processed_flag,
-                        sfl_n.file_processed_date,
-                        sfl_n.bv_processed_flag,
-                        sfl_n.bv_refresh_start_date,
-                        sfl_n.bv_refresh_end_date )""")
-                cursor.execute(sql)
+                sql = """
+                INSERT INTO src_file_log (
+                    seq_no,
+                    load_date,
+                    record_source,
+                    system_id,
+                    data_package_id,
+                    file_id,
+                    file_name,
+                    file_path,
+                    file_size,
+                    file_hk,
+                    file_hk_prev,
+                    file_modified_flag,
+                    file_creation_date,
+                    file_modification_date,
+                    file_extraction_id,
+                    file_extraction_date,
+                    file_copied_flag,
+                    file_copy_date,
+                    file_read_flag,
+                    file_read_date,
+                    file_processed_flag,
+                    file_processed_date,
+                    bv_processed_flag,
+                    bv_refresh_start_date,
+                    bv_refresh_end_date
+                )
+                SELECT
+                    NULL AS seq_no,
+                    NOW() AS load_date,
+                    'EodToday.py' AS record_source,
+                    'EOD' AS system_id,
+                    'DP001' AS data_package_id,
+                    NULL AS file_id,
+                    NULL AS file_name,
+                    NULL AS file_path,
+                    NULL AS file_size,
+                    NULL AS file_hk,
+                    NULL AS file_hk_prev,
+                    'N' AS file_modified_flag,
+                    CURDATE() AS file_creation_date,
+                    CURDATE() AS file_modification_date,
+                    CONCAT(DATE_FORMAT(CURDATE(), '%Y%m%d-%H:%i:%s'), %s) AS file_extraction_id,
+                    CURDATE() AS file_extraction_date,
+                    NULL AS file_copied_flag,
+                    NULL AS file_copy_date,
+                    NULL AS file_read_flag,
+                    NOW() AS file_read_date,
+                    'N' AS file_processed_flag,
+                    NULL AS file_processed_date,
+                    NULL AS bv_processed_flag,
+                    NULL AS bv_refresh_start_date,
+                    NULL AS bv_refresh_end_date
+                WHERE DAYOFWEEK(CURDATE()) NOT IN (1, 7)
+                    AND CURDATE() NOT IN (
+                        SELECT DATE(se_bank_holiday)
+                        FROM exn1.se_bank_holiday
+                    )
+                ON DUPLICATE KEY UPDATE
+                    load_date = NOW(),
+                    file_read_date = NOW(),
+                    file_modification_date = NOW(),
+                    file_modified_flag = 'Y',
+                    file_processed_flag = 'N'
+                """
+                cursor.execute(sql, (self.eodExchange,))
                 connection.commit()
             with connection.cursor() as cursor:
-                sql = ("""SELECT
-                            MIN(to_char(
-                                sfl.file_extraction_date, 'YYYYMMDD'
-                            )) file_extraction_date,
-                            MIN(
-                                sfl.file_extraction_id
-                            ) file_extraction_id
-                        FROM
-                            src_file_log sfl
-                        WHERE
-                            sfl.data_package_id = 'DP001'
-                            AND sfl.file_processed_flag = 'N'""")
+                sql = """SELECT
+                            MIN(DATE_FORMAT(sfl.file_extraction_date, '%Y%m%d')) AS file_extraction_date,
+                            MIN(sfl.file_extraction_id) AS file_extraction_id
+                        FROM src_file_log sfl
+                        WHERE sfl.data_package_id = 'DP001'
+                            AND sfl.file_processed_flag = 'N'"""
                 cursor.execute(sql)
                 for (file_extraction_date, file_extraction_id) in cursor:
                     if file_extraction_date is not None:
@@ -177,37 +118,24 @@ class EodToday(object):
                                 host=os.environ.get("MYSQL_HOST")) as connectionODITMP:
 
                                 with connectionODITMP.cursor() as cursorODITMP:
-                                    sql = ("""BEGIN 
-                                    ODITMP.RDV_EOD_DP001_CTL.MAIN();
-                                    END;""")
+                                    sql = "CALL ODITMP.RDV_EOD_DP001_CTL_MAIN()"
                                     cursorODITMP.execute(sql)
+                                    connectionODITMP.commit()
 
                                 with connection.cursor() as cursor:
-                                    sql = ("""UPDATE src_file_log
+                                    sql = """UPDATE src_file_log
                                                 SET
-                                                    file_processed_flag = 'Y'
-                                                 , file_processed_date = sysdate 
+                                                    file_processed_flag = 'Y',
+                                                    file_processed_date = NOW()
                                                 WHERE
                                                     data_package_id = 'DP001'
-                                                    AND file_extraction_id = '"""+file_extraction_id+ """'
-                                                    AND file_processed_flag = 'N'""")
-                                    cursor.execute(sql)
+                                                    AND file_extraction_id = %s
+                                                    AND file_processed_flag = 'N'"""
+                                    cursor.execute(sql, (file_extraction_id,))
                                     connection.commit()
 
                                     with connection.cursor() as cursor:
-                                        sql = """MERGE INTO src_db_log sdl
-                                                USING (
-                                                    SELECT
-                                                        '{}' || 'STOCKALERT'  as db_extraction_id
-                                                    FROM
-                                                        dual
-                                                ) n ON ( sdl.db_extraction_id = n.db_extraction_id )
-                                                WHEN MATCHED THEN UPDATE
-                                                SET sdl.db_processed_flag = 'N',
-                                                    sdl.db_read_flag = 'Y',
-                                                    sdl.db_processed_date = NULL
-                                                WHEN NOT MATCHED THEN
-                                                INSERT (
+                                        sql = """INSERT INTO src_db_log (
                                                     seq_no,
                                                     load_date,
                                                     record_source,
@@ -221,27 +149,27 @@ class EodToday(object):
                                                     db_processed_flag,
                                                     db_processed_date )
                                                 VALUES
-                                                    ( src_db_log_seq.NEXTVAL,
-                                                    sysdate,
+                                                    ( NULL,
+                                                    NOW(),
                                                     'EodToday.py',
                                                     'STOCKALERT',
                                                     '100',
                                                     'DP003',
-                                                    '{}' || 'STOCKALERT',
-                                                    sysdate,
+                                                    CONCAT(%s, 'STOCKALERT'),
+                                                    NOW(),
                                                     'Y',
-                                                    sysdate,
+                                                    NOW(),
                                                     'N',
-                                                    NULL )""".format(file_extraction_date, file_extraction_date)
-                                        cursor.execute(sql)
+                                                    NULL )
+                                                ON DUPLICATE KEY UPDATE
+                                                    db_processed_flag = 'N',
+                                                    db_read_flag = 'Y',
+                                                    db_processed_date = NULL"""
+                                        cursor.execute(sql, (file_extraction_date,))
                                         connection.commit()
 
                                     with connectionODITMP.cursor() as cursorODITMP:
-                                        sql = ("""BEGIN 
-                                        ODITMP.RDV_STOCKALERT_DP003_CTL.MAIN();
-                                        ODITMP.STOCKALERT_SENDMAIL.MAIN();
-                                        --DBMS_SNAPSHOT.REFRESH( '"STOCK_EDW"."EOD_BB"','C');
-                                        END;""")
+                                        sql = "CALL ODITMP.RDV_STOCKALERT_DP003_CTL()"
                                         cursorODITMP.execute(sql)
                                         connectionODITMP.commit()
 
@@ -252,13 +180,13 @@ class EodToday(object):
                                         host=os.environ.get("MYSQL_HOST")) as connection2:
 
                                         with connection2.cursor() as cursor:
-                                            sql = ("""UPDATE src_db_log
+                                            sql = """UPDATE src_db_log
                                                     SET
-                                                        db_processed_flag = 'Y'
-                                                        ,db_processed_date = sysdate
+                                                        db_processed_flag = 'Y',
+                                                        db_processed_date = NOW()
                                                     WHERE
-                                                        db_extraction_id = '{}'||'STOCKALERT'""".format(file_extraction_date))
-                                            cursor.execute(sql)
+                                                        db_extraction_id = CONCAT(%s, 'STOCKALERT')"""
+                                            cursor.execute(sql, (file_extraction_date,))
                                             connection2.commit()
 
         # except oracledb.Error as error:
