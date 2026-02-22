@@ -4,7 +4,8 @@
 
 
 1. **Install python and requirements**
-
+   
+   ```
    sudo dnf module list python38
    sudo dnf module enable -y python38
    sudo dnf install -y python38 python38-pip python38-devel
@@ -14,8 +15,9 @@
    pip install mysql-connector-python
    python3.8 -m pip install requests
    python3.8 -m pip install pytz
-
-3. **Create an environment file**
+   ```
+   
+2. **Create an environment file**
 
    Create a file named `setEnv.sh` with the following content:
 
@@ -35,7 +37,7 @@
 
    ```
 
-4. **Install dependencies**
+3. **Install dependencies**
 
    ```bash
    sudo dnf install mysql-devel python3-devel
