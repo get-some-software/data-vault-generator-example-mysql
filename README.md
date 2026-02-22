@@ -50,7 +50,13 @@
    . setEnv.sh
    ```
 
-2. Start the application:
+2. set venv:
+
+   ```bash
+   source .venv/bin/activate
+   ```
+
+3. Start the application:
 
    ```bash
    sh start.sh
