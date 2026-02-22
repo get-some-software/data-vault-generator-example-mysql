@@ -118,7 +118,7 @@ class EodToday(object):
                                 host=os.environ.get("MYSQL_HOST")) as connectionODITMP:
 
                                 with connectionODITMP.cursor() as cursorODITMP:
-                                    sql = "CALL ODITMP.RDV_EOD_DP001_CTL_MAIN()"
+                                    sql = "SET ROLE dwh_public_role;CALL ODITMP.RDV_EOD_DP001_CTL()"
                                     cursorODITMP.execute(sql)
                                     connectionODITMP.commit()
 

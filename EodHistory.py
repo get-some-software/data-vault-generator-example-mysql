@@ -145,7 +145,7 @@ class EodHistory(object):
                             if self.debug:
                                 print("Trying to start ODITMP DB Processing EOD  {} {} status connection {}".format(self.eodExchange, file_extraction_date, connectionODITMP.is_healthy))
                             with connectionODITMP.cursor() as cursorODITMP:
-                                sql = "CALL ODITMP.RDV_EOD_DP001_CTL()"
+                                sql = "SET ROLE dwh_public_role; CALL ODITMP.RDV_EOD_DP001_CTL()"
                                 cursorODITMP.execute(sql)
                                 connectionODITMP.commit()
                                 if self.debug:
