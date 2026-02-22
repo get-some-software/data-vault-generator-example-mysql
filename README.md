@@ -1,4 +1,4 @@
-# Data Vault Generator Example (Oracle)
+# Data Vault Generator Example (MySQL)
 
 ## Installation
 
